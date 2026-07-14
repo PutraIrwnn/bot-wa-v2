@@ -1,0 +1,30 @@
+# Dependencies
+node_modules/
+
+# Gemini Agent config (bukan source code bot)
+.agent/
+
+# Environment variables (SENSITIF — jangan push!)
+.env
+.env.local
+.env.keys
+
+# Auth credentials WhatsApp (SENSITIF)
+auth_info_baileys/
+
+# Logs
+*.log
+logs/
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# IDE
+.vscode/
+.idea/
+
+# Temporary
+tmp/
+temp/

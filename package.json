@@ -1,0 +1,31 @@
+{
+  "name": "laragon",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "@distube/ytdl-core": "^4.16.12",
+    "@google/generative-ai": "^0.24.1",
+    "@hapi/boom": "^10.0.1",
+    "@whiskeysockets/baileys": "^7.0.0-rc13",
+    "axios": "^1.18.1",
+    "cheerio": "^1.2.0",
+    "dotenv": "^17.4.2",
+    "duck-duck-scrape": "^2.2.7",
+    "fotmob": "^2.4.1",
+    "google-it": "^1.6.4",
+    "googlethis": "^1.8.0",
+    "mysql2": "^3.22.6",
+    "qrcode-terminal": "^0.12.0",
+    "rss-parser": "^3.13.0",
+    "wa-sticker-formatter": "^4.4.4",
+    "youtube-dl-exec": "^3.1.9"
+  }
+}
