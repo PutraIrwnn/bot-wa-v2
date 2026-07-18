@@ -16,6 +16,10 @@ class RumorEngine {
         this.eventBus.subscribe('story.marketBusy', (p) => this.onCreateRumor('story.marketBusy', p));
         this.eventBus.subscribe('story.harvestFailed', (p) => this.onCreateRumor('story.harvestFailed', p));
 
+        // Faction Events (Sprint 15 / 16 Consolidation)
+        this.eventBus.subscribe(DomainEvents.FactionRivalryFormed, this.handleFactionRivalry.bind(this));
+        this.eventBus.subscribe(DomainEvents.FactionAllianceFormed, this.handleFactionAlliance.bind(this));
+
         // Listen to World Tick for Decay
         this.eventBus.subscribe(DomainEvents.WorldTick, this.onWorldTick.bind(this));
 
@@ -24,7 +28,15 @@ class RumorEngine {
     }
 
     onCreateRumor(eventType, payload) {
-        const rumorId = `rumor_${eventType}_${Date.now()}`;
+        if (this.currentTick === undefined || this.currentTick === 0) {
+            this._tick0Counter = (this._tick0Counter || 0) + 1;
+        }
+        const tick = this.currentTick || 0;
+        const tickSuffix = (tick === 0) ? `_0_${this._tick0Counter}` : `_${tick}`;
+        
+        const crypto = require('crypto');
+        const locHash = crypto.createHash('md5').update(payload.location || 'unknown').digest('hex').substring(0, 4);
+        const rumorId = `rumor_${eventType}${tickSuffix}_${locHash}`;
         
         const rumor = new RumorDTO({
             id: rumorId,
@@ -48,8 +60,44 @@ class RumorEngine {
         }
     }
 
+    handleFactionRivalry(fact) {
+        this.createFactionRumor(fact.targetId, 'negative', `Kudengar faksi ${fact.targetId} mulai bermusuhan karena ${fact.reason || 'perebutan kekuasaan'}.`);
+    }
+
+    handleFactionAlliance(fact) {
+        this.createFactionRumor(fact.targetId, 'positive', `Kudengar faksi ${fact.targetId} menjalin aliansi baru.`);
+    }
+
+    createFactionRumor(targetFactionId, affinity, rawText) {
+        if (this.currentTick === undefined || this.currentTick === 0) {
+            this._tick0Counter = (this._tick0Counter || 0) + 1;
+        }
+        const tick = this.currentTick || 0;
+        const tickSuffix = (tick === 0) ? `_0_${this._tick0Counter}` : `_${tick}`;
+        
+        // Gunakan Hash dari rawText untuk menghindari duplicate ID jika ada 2 rumor di tick yang sama
+        const crypto = require('crypto');
+        const textHash = crypto.createHash('md5').update(rawText).digest('hex').substring(0, 4);
+        const rumorId = `rumor_fac_${targetFactionId}${tickSuffix}_${textHash}`;
+        const rumor = new RumorDTO({
+            id: rumorId,
+            originEvent: 'FACTION_RELATION',
+            originLocation: 'unknown',
+            createdDay: 1, 
+            heat: 100, 
+            credibility: 90,
+            targetFactionId: targetFactionId,
+            affinity: affinity,
+            rawText: rawText
+        });
+        this.globalRumors.set(rumor.id, rumor);
+        console.log(`[RumorEngine] Rumor Faksi Lahir: ${rumor.rawText}`);
+    }
+
     onWorldTick(payload) {
         const tickCount = payload.totalTicks || 0;
+        this.currentTick = tickCount; // Simpan untuk deterministic ID generation
+        
         // Misalkan setiap 24 tick (1 hari) rumor decay sebesar 10
         if (tickCount > 0 && tickCount % 24 === 0) {
             for (const [id, rumor] of this.globalRumors.entries()) {

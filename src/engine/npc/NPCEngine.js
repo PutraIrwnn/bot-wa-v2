@@ -55,6 +55,18 @@ class NPCEngine {
             console.log(`[NPCEngine] ${npc.name} ditolong oleh ${fact.player}. Trust: ${npc.trust}, Memory: ${npc.memory_health}`);
             // Fire-and-forget async persistence
             this.npcRepository.saveState(npc).catch(err => console.error(`[NPCEngine] Error saving ${npc.id} state`, err));
+
+            // Jika NPC tergabung dalam faksi, maka faksi juga merespon (Propagasi Reputasi)
+            if (npc.faction_id) {
+                const dynamicWeight = npc.faction_role_weight || 5;
+                this.eventBus.publish(DomainEvents.PlayerFactionInteraction, {
+                    factionId: npc.faction_id,
+                    playerId: fact.player,
+                    deltaTrust: dynamicWeight,
+                    reason: `Membantu anggota faksi: ${npc.name}`,
+                    currentDay: fact.day || 1
+                });
+            }
         }
     }
 

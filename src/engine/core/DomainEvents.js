@@ -38,6 +38,17 @@ const DomainEvents = {
     RelationshipArchived: 'relationship.archived',
     RelationshipReactivated: 'relationship.reactivated',
 
+    // Faction Events (Sprint 12B)
+    NpcJoinedFaction: 'faction.npcJoined',
+    NpcLeftFaction: 'faction.npcLeft',
+    PlayerFactionInteraction: 'faction.playerInteraction',
+
+    // Diplomacy Events (Sprint 13)
+    WorldEventOccurred: 'world.eventOccurred',
+    FactionAllianceFormed: 'faction.allianceFormed',
+    FactionRivalryFormed: 'faction.rivalryFormed',
+    FactionNeutralized: 'faction.neutralized',
+
     // World & Location Events
     DayPassed: 'world.dayPassed',
     LocationClosed: 'location.closed',

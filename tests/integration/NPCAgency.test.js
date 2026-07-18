@@ -22,9 +22,14 @@ test('NPC Agency: NPC Decides to Move autonomously on WorldTick', async (t) => {
 
     const behaviorEngine = new BehaviorEngine(eventBus, npcEngine);
     
-    // Override Math.random 100% untuk test kepastian pergerakan
-    const originalRandom = Math.random;
-    Math.random = () => 0.05; // 5% (di bawah threshold 0.1) sehingga memicu event pindah
+    // Override crypto.createHash untuk test kepastian pergerakan secara deterministik
+    const crypto = require('crypto');
+    const originalCreateHash = crypto.createHash;
+    crypto.createHash = () => ({
+        update: () => ({
+            digest: () => '0000000000000000000000000000000000000000000000000000000000000000'
+        })
+    });
 
     await t.test('1. WorldTick memicu NPC Agency', async () => {
         let decidedEventFired = false;
@@ -49,6 +54,6 @@ test('NPC Agency: NPC Decides to Move autonomously on WorldTick', async (t) => {
         assert.equal(movedEventFired, true, 'Event npc.moved tidak ditembakkan');
         assert.equal(npcEngine.npcs['budi'].location, 'pasar', 'NPC gagal berpindah lokasi');
         
-        Math.random = originalRandom; // Kembalikan random aslinya
+        crypto.createHash = originalCreateHash; // Kembalikan fungsi hash aslinya
     });
 });

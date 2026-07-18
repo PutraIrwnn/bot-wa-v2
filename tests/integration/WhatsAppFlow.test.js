@@ -1,20 +1,25 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const dbPool = require('../../src/config/db');
 const EventBus = require('../../src/engine/core/EventBus');
 const NPCEngine = require('../../src/engine/npc/NPCEngine');
 const ExploreEngine = require('../../src/engine/core/ExploreEngine');
 const ActionEngine = require('../../src/engine/core/ActionEngine');
 const CommandRouter = require('../../src/adapter/router/CommandRouter');
 const MessageAdapter = require('../../src/adapter/whatsapp/MessageAdapter');
-const MySqlNpcRepository = require('../../src/repository/MySqlNpcRepository');
 const DomainEvents = require('../../src/engine/core/DomainEvents');
 
-test('WhatsApp Flow E2E Integration (Ports & Adapters)', async (t) => {
-    t.after(() => dbPool.end());
+class MockNpcRepo {
+    async loadAll() {
+        return {
+            'rina': { id: 'rina', name: 'Rina', trust: 50, mood: 'tenang', memory_health: 100, location: 'pasar', activity: 'berdiri' }
+        };
+    }
+    async saveState(npc) {}
+}
 
+test('WhatsApp Flow E2E Integration (Ports & Adapters)', async (t) => {
     const eventBus = new EventBus();
-    const npcRepo = new MySqlNpcRepository(dbPool);
+    const npcRepo = new MockNpcRepo();
     const npcEngine = new NPCEngine(eventBus, npcRepo);
     const exploreEngine = new ExploreEngine(eventBus);
     

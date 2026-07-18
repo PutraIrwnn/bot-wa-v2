@@ -17,11 +17,15 @@ const SnapshotEngine = require('./engine/world/SnapshotEngine');
 const ConsequenceEngine = require('./engine/world/ConsequenceEngine');
 const StoryEngine = require('./engine/story/StoryEngine');
 const RumorEngine = require('./engine/rumor/RumorEngine');
+const NewsEngine = require('./engine/news/NewsEngine');
 const BeliefEngine = require('./engine/npc/BeliefEngine');
 const TrustManager = require('./engine/npc/TrustManager');
 const RelationshipEngine = require('./engine/npc/RelationshipEngine');
+const FactionEngine = require('./engine/faction/FactionEngine');
 const InMemoryWorldRepository = require('./repository/InMemoryWorldRepository');
 const InMemorySnapshotRepository = require('./repository/InMemorySnapshotRepository');
+const MySqlFactionRepository = require('./repository/MySqlFactionRepository');
+const MySqlPlayerFactionRelRepository = require('./repository/MySqlPlayerFactionRelRepository');
 
 // Ambil GEMINI_API_KEY dari env
 require('dotenv').config();
@@ -41,10 +45,14 @@ async function bootstrap() {
     // 3. Inisialisasi Domain Engines
     const npcEngine = new NPCEngine(eventBus, npcRepository);
     const exploreEngine = new ExploreEngine(eventBus); // Stub
+    const factionRepo = new MySqlFactionRepository(dbPool);
+    const playerFactionRelRepo = new MySqlPlayerFactionRelRepository(dbPool);
+    const factionEngine = new FactionEngine(eventBus, factionRepo, playerFactionRelRepo);
 
     // 4. Recovery Routine: Load Data dari MySQL ke Engine RAM
     logger.info('Executing Recovery Routine...');
     await npcEngine.init();
+    await factionEngine.init();
 
     // 5. Inisialisasi Hybrid World Time & NPC Agency
     const worldRepo = new InMemoryWorldRepository();
@@ -58,6 +66,7 @@ async function bootstrap() {
     const consequenceEngine = new ConsequenceEngine(eventBus, worldRepo);
     const storyEngine = new StoryEngine(eventBus, snapshotRepo);
     const rumorEngine = new RumorEngine(eventBus);
+    const newsEngine = new NewsEngine(eventBus, rumorEngine);
     
     // Cognitive Layer (Sprint 10)
     const trustManager = new TrustManager(eventBus, npcRepository);
@@ -80,7 +89,8 @@ async function bootstrap() {
     const promptEngine = new PromptEngine(llmAdapter);
 
     // 7. Inisialisasi Adapters Boundary (Action Engine)
-    const actionEngine = new ActionEngine(eventBus, npcEngine, exploreEngine, promptEngine);
+    const actionEngine = new ActionEngine(eventBus, npcEngine, exploreEngine, promptEngine, factionEngine, rumorEngine);
+    actionEngine.newsEngine = newsEngine;
 
     // 8. Inisialisasi WhatsApp Adapters
     const commandRouter = new CommandRouter();

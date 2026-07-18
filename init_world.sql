@@ -102,7 +102,44 @@ INSERT IGNORE INTO world_state (`key`, `value`) VALUES
 ('world_mood', 'peaceful');
 
 
--- 7. NPC Profiles
+-- 7. Factions (Sprint 12B)
+CREATE TABLE IF NOT EXISTS factions (
+    id VARCHAR(50) PRIMARY KEY,
+    name VARCHAR(100) NOT NULL,
+    goals TEXT,
+    policies TEXT,
+    shared_knowledge TEXT, -- JSON array of rumor_ids
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS faction_relationships (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    source_faction_id VARCHAR(50) NOT NULL,
+    target_faction_id VARCHAR(50) NOT NULL,
+    trust INT DEFAULT 50,
+    tension INT DEFAULT 0,
+    status ENUM('ALLY', 'NEUTRAL', 'RIVAL') DEFAULT 'NEUTRAL',
+    last_event VARCHAR(200),
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (source_faction_id) REFERENCES factions(id) ON DELETE CASCADE,
+    FOREIGN KEY (target_faction_id) REFERENCES factions(id) ON DELETE CASCADE,
+    UNIQUE KEY unique_faction_rel (source_faction_id, target_faction_id)
+);
+
+CREATE TABLE IF NOT EXISTS player_faction_relationships (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    player_id VARCHAR(50) NOT NULL,
+    faction_id VARCHAR(50) NOT NULL,
+    trust INT DEFAULT 50,
+    interaction_count INT DEFAULT 0,
+    history_log TEXT,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (faction_id) REFERENCES factions(id) ON DELETE CASCADE,
+    UNIQUE KEY unique_player_faction_rel (player_id, faction_id)
+);
+
+-- 8. NPC Profiles
 CREATE TABLE IF NOT EXISTS npc_profiles (
     npc_id VARCHAR(50) PRIMARY KEY,
     name VARCHAR(100) NOT NULL,
@@ -111,5 +148,8 @@ CREATE TABLE IF NOT EXISTS npc_profiles (
     memory_health INT DEFAULT 100,
     mood VARCHAR(50) DEFAULT 'tenang',
     activity VARCHAR(100) DEFAULT 'idle',
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+    faction_id VARCHAR(50) DEFAULT NULL,
+    faction_role_weight INT DEFAULT 5,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (faction_id) REFERENCES factions(id) ON DELETE SET NULL
 );

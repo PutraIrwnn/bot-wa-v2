@@ -29,18 +29,34 @@ class BeliefEngine {
             // Cek trust pada sumber
             const sourceTrust = npc.trustNetwork[k.heardFrom] || 50; // Default Netral
 
+            let affiliationBias = 0;
+            let biasReason = '';
+
+            // Sprint 15: Ingroup Bias (Affiliation Bias)
+            if (globalRumor.targetFactionId && npc.faction_id === globalRumor.targetFactionId) {
+                if (globalRumor.affinity === 'negative') {
+                    affiliationBias = -30; // Denial
+                    biasReason = ' (Denial: Menolak percaya hal buruk tentang faksinya sendiri)';
+                } else if (globalRumor.affinity === 'positive') {
+                    affiliationBias = 20; // Ingroup favoritism
+                    biasReason = ' (Bangga: Sangat percaya hal baik tentang faksinya sendiri)';
+                }
+            }
+
             // Kalkulasi deterministik BeliefScore
-            // Faktor: Kepercayaan (Confidence k), Kredibilitas Isu (Credibility), dan Trust ke pembawa berita.
-            let score = (k.confidence * 0.3) + (globalRumor.credibility * 0.3) + (sourceTrust * 0.4);
+            // Faktor: Kepercayaan (Confidence k), Kredibilitas Isu (Credibility), Trust ke pembawa berita, dan Affiliation Bias.
+            let score = (k.confidence * 0.3) + (globalRumor.credibility * 0.3) + (sourceTrust * 0.4) + affiliationBias;
             score = Math.min(100, Math.max(0, Math.floor(score)));
 
             let certainty = 'LOW';
             if (score > 80) certainty = 'HIGH';
             else if (score > 40) certainty = 'MEDIUM';
 
-            const reason = sourceTrust > 70 
+            const baseReason = sourceTrust > 70 
                 ? `Sangat percaya karena bersumber dari ${k.heardFrom}.` 
                 : (sourceTrust < 30 ? `Meragukan karena ${k.heardFrom} pembohong.` : `Mengevaluasi secara objektif.`);
+            
+            const reason = baseReason + biasReason;
 
             // Cari apakah sudah punya belief ini
             const existingIdx = npc.beliefs.findIndex(b => b.rumorId === k.rumorId);
