@@ -12,6 +12,7 @@
   "type": "commonjs",
   "dependencies": {
     "@distube/ytdl-core": "^4.16.12",
+    "@google/genai": "^2.11.0",
     "@google/generative-ai": "^0.24.1",
     "@hapi/boom": "^10.0.1",
     "@whiskeysockets/baileys": "^7.0.0-rc13",
@@ -23,6 +24,7 @@
     "google-it": "^1.6.4",
     "googlethis": "^1.8.0",
     "mysql2": "^3.22.6",
+    "pino": "^10.3.1",
     "qrcode-terminal": "^0.12.0",
     "rss-parser": "^3.13.0",
     "wa-sticker-formatter": "^4.4.4",

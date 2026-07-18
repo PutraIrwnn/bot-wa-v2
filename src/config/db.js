@@ -11,13 +11,17 @@ const pool = mysql.createPool({
     queueLimit: 0
 });
 
+const Logger = require('../engine/core/Logger');
+const dbLogger = new Logger('MySQL');
+
 // Test the connection
 pool.getConnection()
     .then(connection => {
+        dbLogger.info('Connected to database successfully.');
         connection.release();
     })
     .catch(err => {
-        console.error('❌ Error connecting to MySQL database:', err.message);
+        dbLogger.error('Error connecting to MySQL database:', err);
     });
 
 module.exports = pool;
