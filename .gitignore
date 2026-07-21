@@ -28,3 +28,9 @@ desktop.ini
 # Temporary
 tmp/
 temp/
+
+# Context & Sprint Reports
+CONTEXT.md
+PROJECT_CONTEXT.md
+sprint_*_report.md
+
